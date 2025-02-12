@@ -1,10 +1,19 @@
 package com.quizapp.controller;
 
+import com.quizapp.model.Contact;
 import com.quizapp.model.QuizResultSummary;
 import com.quizapp.model.User;
+import com.quizapp.model.Question;
+import com.quizapp.model.QuestionCategory;
 import com.quizapp.service.QuizResultSummaryService;
 import com.quizapp.service.UserService;
+import com.quizapp.service.ContactService;
+import com.quizapp.service.QuestionService;
+import com.quizapp.service.QuestionCategoryService;
+
+
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,9 +31,20 @@ public class AdminController {
     private final UserService userService;
     private final QuizResultSummaryService quizResultSummaryService;
 
-    public AdminController(UserService userService,QuizResultSummaryService quizResultSummaryService) {
+    private final QuestionService questionService;
+
+    private final ContactService contactService;
+
+    private final QuestionCategoryService questionCategoryService;
+
+
+
+    public AdminController(UserService userService,QuizResultSummaryService quizResultSummaryService,ContactService contactService,QuestionService questionService,QuestionCategoryService questionCategoryService) {
         this.userService = userService;
         this.quizResultSummaryService = quizResultSummaryService;
+        this.contactService = contactService;
+        this.questionService = questionService;
+        this.questionCategoryService = questionCategoryService;
     }
 
     // ✅ 确保管理员访问权限
@@ -45,28 +65,83 @@ public class AdminController {
 
 
     @GetMapping("/questions")
-    public String showQuestionManagementPage(HttpSession session) {
+    public String showQuestionManagementPage(@RequestParam(required = false) Integer categoryId, Model model, HttpSession session) {
         if (!checkAdminAccess(session)) return "redirect:/user/login";
+
+        List<Question> questions;
+        if (categoryId != null) {
+            questions = questionService.getQuestionsByCategory(categoryId);
+        } else {
+            questions = questionService.getAllQuestions();
+        }
+
+        model.addAttribute("questions", questions);
         return "adminQuestions";
+    }
+
+
+    @GetMapping("/add-question")
+    public String showAddQuestionPage(Model model, HttpSession session) {
+        if (!checkAdminAccess(session)) return "redirect:/user/login";
+
+        List<QuestionCategory> categories = questionCategoryService.getAllCategories();  // 获取所有分类
+        model.addAttribute("categories", categories);
+        model.addAttribute("question", new Question());  // 绑定空问题对象
+        return "adminAddQuestion";  // 显示 JSP
+    }
+
+    // ✅ 处理表单提交
+    @PostMapping("/add-question")
+    public String addQuestion(@ModelAttribute Question question, @RequestParam("categoryId") int categoryId, HttpSession session) {
+        if (!checkAdminAccess(session)) return "redirect:/user/login";
+
+        // 设置问题类别
+        QuestionCategory category = questionCategoryService.getCategoryById(categoryId);
+        question.setCategory(category);
+
+        // 保存问题
+        questionService.saveQuestion(question);
+
+        return "redirect:/admin/questions";  // 返回问题管理页面
+    }
+
+    // ✅ 处理删除 Question
+    @GetMapping("/delete-question/{id}")
+    public String deleteQuestion(@PathVariable("id") int id, HttpSession session) {
+        if (!checkAdminAccess(session)) return "redirect:/user/login";
+
+        questionService.deleteQuestionById(id);
+        return "redirect:/admin/questions";
     }
 
 
 
     @GetMapping("/contact")
-    public String showContactManagementPage(HttpSession session) {
+    public String showContactManagementPage(Model model, HttpSession session) {
         if (!checkAdminAccess(session)) return "redirect:/user/login";
-        List<User> users = userService.getAllUsers();
 
+        List<Contact> messages = contactService.getAllMessages();
+        System.out.println("Fetched Messages: " + messages); // 添加日志，检查是否查询到数据
+
+        model.addAttribute("messages", messages);
         return "adminContact";
     }
 
-    // ✅ 处理删除用户
+    @GetMapping("/delete-contact/{id}")
+    public String deleteMessage(@PathVariable("id") int messageId, HttpSession session) {
+        if (!checkAdminAccess(session)) return "redirect:/user/login";
+
+        contactService.deleteMessageById(messageId); // 调用 Service 层删除消息
+        return "redirect:/admin/contact";
+    }
+
+
     @GetMapping("/delete-user/{id}")
     public String deleteUser(@PathVariable("id") int userId, HttpSession session) {
         if (!checkAdminAccess(session)) return "redirect:/user/login";
 
         userService.deleteUserById(userId);
-        return "redirect:/admin/users";  // ✅ 删除后刷新页面
+        return "redirect:/admin/users";  //  删除后刷新页面
     }
 
     // ✅ 进入编辑用户页面
@@ -76,7 +151,7 @@ public class AdminController {
 
         User user = userService.getUserById(userId);
         model.addAttribute("user", user);
-        return "editUser";  // ✅ 显示 `editUser.jsp`
+        return "editUser";  //  显示 `editUser.jsp`
     }
 
     // ✅ 处理编辑用户的请求
@@ -85,7 +160,7 @@ public class AdminController {
         if (!checkAdminAccess(session)) return "redirect:/user/login";
 
         userService.updateUser(user);
-        return "redirect:/admin/users";  // ✅ 修改后刷新用户列表
+        return "redirect:/admin/users";  //  修改后刷新用户列表
     }
 
     @GetMapping("/quiz-results")

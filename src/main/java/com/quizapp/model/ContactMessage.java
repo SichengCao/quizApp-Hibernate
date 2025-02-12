@@ -3,11 +3,11 @@ package com.quizapp.model;
 import java.time.LocalDateTime;
 
 public class ContactMessage {
-    private int contactId;  // ✅ 需要匹配 `contact_id`
+    private int contactId;  //  需要匹配 `contact_id`
     private String subject;
     private String message;
     private String email;
-    private LocalDateTime time;  // ✅ 确保 `time` 字段匹配数据库
+    private LocalDateTime time;  //  确保 `time` 字段匹配数据库
 
     public ContactMessage() {}
 
@@ -15,7 +15,7 @@ public class ContactMessage {
         this.subject = subject;
         this.email = email;
         this.message = message;
-        this.time = LocalDateTime.now();  // ✅ 默认存储当前时间
+        this.time = LocalDateTime.now();  //  默认存储当前时间
     }
 
     public int getContactId() { return contactId; }

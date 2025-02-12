@@ -1,19 +1,34 @@
 package com.quizapp.model;
 
-import java.sql.Timestamp;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "contact")
 public class Contact {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int contactId;
+
     private String subject;
     private String email;
-    private Timestamp time;
+
+    @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
-    public Contact(int contactId, String subject, String email, Timestamp time, String message) {
-        this.contactId = contactId;
+    @Column(name = "time", updatable = false)
+    private LocalDateTime time;
+
+    @PrePersist
+    protected void onCreate() {
+        this.time = LocalDateTime.now();
+    }
+
+    public Contact() {}
+
+    public Contact(String subject, String email, String message) {
         this.subject = subject;
         this.email = email;
-        this.time = time;
         this.message = message;
     }
 
@@ -27,9 +42,8 @@ public class Contact {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public Timestamp getTime() { return time; }
-    public void setTime(Timestamp time) { this.time = time; }
-
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
+
+    public LocalDateTime getTime() { return time; }
 }

@@ -1,20 +1,13 @@
 package com.quizapp.repository;
 
-import com.quizapp.model.ContactMessage;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.quizapp.model.Contact;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public class ContactRepository {
-    private final JdbcTemplate jdbcTemplate;
-
-    public ContactRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    // ✅ 存储消息
-    public void saveMessage(ContactMessage message) {
-        String sql = "INSERT INTO contact (subject, email, message, time) VALUES (?, ?, ?, NOW())";
-        jdbcTemplate.update(sql, message.getSubject(), message.getEmail(), message.getMessage());
-    }
+public interface ContactRepository extends JpaRepository<Contact, Integer> {
+    List<Contact> findByEmail(String email);
+    List<Contact> findBySubjectContaining(String keyword);
 }

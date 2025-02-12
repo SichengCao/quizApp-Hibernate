@@ -31,18 +31,18 @@
         <div class="mb-3">
             <label>Is Active?</label>
             <select name="isActive" class="form-select">
-                <option value="true" ${user.isActive ? "selected" : ""}>Yes</option>
-                <option value="false" ${!user.isActive ? "selected" : ""}>No</option>
+                <option value=1 ${user.isActive ? "selected" : ""}>Yes</option>
+                <option value=0 ${!user.isActive ? "selected" : ""}>No</option>
             </select>
         </div>
 
-        <div class="mb-3">
-            <label>Role</label>
-            <select name="isAdmin" class="form-select">
-                <option value="true" ${user.isAdmin ? "selected" : ""}>Admin</option>
-                <option value="false" ${!user.isAdmin ? "selected" : ""}>User</option>
-            </select>
-        </div>
+<%--        <div class="mb-3">--%>
+<%--            <label>Role</label>--%>
+<%--            <select name="isAdmin" class="form-select">--%>
+<%--                <option value="1" ${user.isAdmin ? "selected" : ""}>Admin</option>--%>
+<%--                <option value="0" ${!user.isAdmin ? "selected" : ""}>User</option>--%>
+<%--            </select>--%>
+<%--        </div>--%>
 
         <button type="submit" class="btn btn-success">Save Changes</button>
         <a href="<%= request.getContextPath() %>/admin/users" class="btn btn-secondary">Cancel</a>
